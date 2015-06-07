@@ -16,8 +16,6 @@ or install from Rubygems:
 
     gem install lexer-identity
 
-## Use
-
 
 ## Details
 
@@ -26,21 +24,21 @@ or install from Rubygems:
 Have a limited list of keys which can be reviewed at: http://developer.lexer.io/
 Your hash should reflect the following format:
 
-   {
-     email: "joe.smith@mybrand.com",
-     phone: "61440000000",
-     twitter: "camplexer"
-   }
+    {
+      email: "joe.smith@mybrand.com",
+      phone: "61440000000",
+      twitter: "camplexer"
+    }
 
 Multiple values can be provided via arrays:
 
-   {
-     email: ["joe.smith@mybrand.com", "j.smith@mybrand.com"],
-     phone: "61440000000",
-     twitter: "camplexer"
-   }
+    {
+      email: ["joe.smith@mybrand.com", "j.smith@mybrand.com"],
+      phone: "61440000000",
+      twitter: "camplexer"
+    }
 
-Attributes:
+### Attributes:
 
 Need to be defined by the valid namespace which should be provided
 to you along with your tokens.
@@ -50,11 +48,11 @@ is defined along with your tokens and `*` can be replaced with any
 
 Your attribute hash should reflect the following format:
 
-   {
-     "com.brand.email" => "joe.smith@mybrand.com",
-     "com.brand.phone" => "61440000000",
-     "com.brand.twitter" => "camplexer"
-   }
+    {
+      "com.brand.email" => "joe.smith@mybrand.com",
+      "com.brand.phone" => "61440000000",
+      "com.brand.twitter" => "camplexer"
+    }
 
 Permitted values include:
 
