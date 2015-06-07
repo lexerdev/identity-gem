@@ -5,6 +5,8 @@ require 'lexer/identity/version'
 Gem::Specification.new do |s|
   s.name        = 'lexer-identity'
   s.version     = Lexer::Identity::VERSION
+  s.platform    = Gem::Platform::RUBY
+  s.licenses    = ['MIT']
   s.authors     = ['Aaron Wallis']
   s.email       = 'code@Lexer.io'
   s.homepage    = 'https://github.com/lexerdev/lexer-identity-api.gem'
@@ -13,8 +15,16 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'multi_json', '~> 1.3'
 
-  s.files         = `git ls-files`.split('\n')
-  s.test_files    = `git ls-files -- {test,spec,features}/*`.split('\n')
-  s.executables   = `git ls-files -- bin/*`.split('\n').map { |f| File.basename(f) }
+  s.files = `git ls-files`.split($RS).reject do |file|
+    file =~ %r{^(?:
+    spec/.*
+    |Gemfile
+    |Rakefile
+    |\.gitignore
+    |\.rubocop.yml
+    |\.travis.yml
+    )$}x
+  end
+  s.test_files    = `git ls-files`.split($RS)
   s.require_paths = ['lib']
 end
