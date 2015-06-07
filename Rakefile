@@ -1,0 +1,9 @@
+# encoding: utf-8
+require 'bundler'
+require 'rake'
+require 'rake/testtask'
+
+Rake::TestTask.new do |t|
+  t.pattern = 'spec/**/*_spec.rb'
+  t.libs.push 'spec'
+end
