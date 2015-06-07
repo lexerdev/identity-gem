@@ -1,9 +1,9 @@
 # Lexer Identities Official Ruby Client Library
 
-[![Build Status](https://travis-ci.org/lexerdev/lexer-identity-gem.svg)](http://travis-ci.org/lexerdev/lexer-identity-gem)
-[![Code Climate](https://codeclimate.com/github/lexerdev/lexer-identity-gem/badges/gpa.svg)](https://codeclimate.com/github/lexerdev/lexer-identity-gem)
+[![Build Status](https://travis-ci.org/lexerdev/identity-gem.svg)](http://travis-ci.org/lexerdev/identity-gem)
+[![Code Climate](https://codeclimate.com/github/lexerdev/identity-gem/badges/gpa.svg)](https://codeclimate.com/github/lexerdev/identity-gem)
 
-lexer-identity-gem is the official Ruby Client for the [Lexer Identity](https://lexer.io/) API. The
+Lexer Identity Gem is the official Ruby Client for the [Lexer Identity](https://lexer.io/) API. The
 Lexer Identity API lets brands contribute and consume from Lexer's Identity database directly from their apps.
 
 ## Installation
