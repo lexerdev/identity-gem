@@ -11,6 +11,7 @@ module Lexer
     #
     # Options:
     #
+    # +id+         - A string of the Lexer Identity ID to lookup
     # +links+      - A hash of links to search for and link to the identity. Default: {}.
     # +attributes+ - A hash of attributes where keys are valid namespaces. Default: {}.
     #
@@ -18,14 +19,15 @@ module Lexer
     #
     # A hash containing the Lexer Identity ID and any attributes on the identity
     #
-    def self.enrich(links: {}, attributes: {})
+    def self.enrich(id: nil, links: {}, attributes: {})
       # ensure the module is configured
       fail Lexer::Identity::ConfigurationError, 'Module has not been configured.' if configuration.nil?
       configuration.validate
 
       # produce the request body
       body = {}
-      body[:links] = links
+      body[:id] = id unless id.nil?
+      body[:links] = links if id.nil?
       body[:attributes] = attributes unless configuration.contributor_token.nil?
       body[:api_token] = configuration.api_token unless configuration.api_token.nil?
       body[:contributor_token] = configuration.contributor_token unless configuration.contributor_token.nil?

@@ -2,17 +2,18 @@
 require 'spec_helper'
 
 describe Lexer::Identity do
-  describe 'contributions' do
+  describe 'use of links and ids' do
     before do
       Lexer::Identity.configuration = nil
       Lexer::Identity.configure do |config|
         config.api_token = 'abc-123'
         config.contributor_token = 'bcd-234'
+        config.consumer_token = 'cde-345'
       end
     end
-    it 'produces a valid request' do
+    it 'produces a valid request with links' do
       stub_request(:post, 'https://identity.lexer.io/identity').
-        with(body: '{"links":{"email":["user1@brand.com","usera@brand.com"],"mobile":"61440000000"},"attributes":{"com.brand.car":"Tesla","com.brand.code":10,"com.brand.products":["a","b","c"],"com.brand.detail":{"make":"cake"}},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
+        with(body: '{"links":{"email":["user1@brand.com","usera@brand.com"],"mobile":"61440000000"},"attributes":{"com.brand.car":"Tesla","com.brand.code":10,"com.brand.products":["a","b","c"],"com.brand.detail":{"make":"cake"}},"api_token":"abc-123","contributor_token":"bcd-234","consumer_token":"cde-345"}', headers: { 'Content-Type' => 'application/json' }).
         to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
 
       Lexer::Identity.enrich(
@@ -29,6 +30,55 @@ describe Lexer::Identity do
 
       assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
     end
+    it 'produces a valid request with an ID' do
+      stub_request(:post, 'https://identity.lexer.io/identity').
+        with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":"Tesla","com.brand.code":10,"com.brand.products":["a","b","c"],"com.brand.detail":{"make":"cake"}},"api_token":"abc-123","contributor_token":"bcd-234","consumer_token":"cde-345"}', headers: { 'Content-Type' => 'application/json' }).
+        to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
+
+      Lexer::Identity.enrich(
+        id: '0a224111-ac64-4142-9198-adf8bf2c1a04',
+        attributes: {
+          'com.brand.car' => 'Tesla',
+          'com.brand.code' => 10,
+          'com.brand.products' => %w(a b c),
+          'com.brand.detail' => { make: 'cake' }
+        }
+      )
+
+      assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
+    end
+    it 'ignores links when an ID is present' do
+      stub_request(:post, 'https://identity.lexer.io/identity').
+        with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":"Tesla","com.brand.code":10,"com.brand.products":["a","b","c"],"com.brand.detail":{"make":"cake"}},"api_token":"abc-123","contributor_token":"bcd-234","consumer_token":"cde-345"}', headers: { 'Content-Type' => 'application/json' }).
+        to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
+
+      Lexer::Identity.enrich(
+        id: '0a224111-ac64-4142-9198-adf8bf2c1a04',
+        links: {
+          email: %w(user1@brand.com usera@brand.com),
+          mobile: '61440000000'
+        },
+        attributes: {
+          'com.brand.car' => 'Tesla',
+          'com.brand.code' => 10,
+          'com.brand.products' => %w(a b c),
+          'com.brand.detail' => { make: 'cake' }
+        }
+      )
+
+      assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
+    end
+  end
+
+  describe 'contributions' do
+    before do
+      Lexer::Identity.configuration = nil
+      Lexer::Identity.configure do |config|
+        config.api_token = 'abc-123'
+        config.contributor_token = 'bcd-234'
+      end
+    end
+    
     it 'returns an EnrichedResult' do
       stub_request(:post, 'https://identity.lexer.io/identity').
         with(body: '{"links":{"email":"user1@brand.com"},"attributes":{"com.brand.car":"Tesla"},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
