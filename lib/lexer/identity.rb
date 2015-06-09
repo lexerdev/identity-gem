@@ -22,7 +22,7 @@ module Lexer
   #     config.consumer_token = "..."
   #   end
   #
-  #   Lexer::Identity.enrich( links: { email: "...", ... }, attributes: { "com.mybrand.name": "...", ... } )
+  #   Lexer::Identity.enrich( id: "...", links: { email: "...", ... }, attributes: { "com.mybrand.name": "...", ... } )
   #
   # See the +Lexer::Identity.enrich+ documentation for more details.
   module Identity
@@ -43,6 +43,12 @@ module Lexer
 
     # Will be thrown when there is an error with the Module's configuration
     class ConfigurationError < Error; end
+
+    # Thrown when the attribute payload is not valid
+    class AttributePayloadError < Error; end
+
+    # Thrown when a request does not contain an ID or Link
+    class MissingLinksError < Error; end
 
     # Will be thrown when there is an error communicating with the API
     # Also inherited by other errors

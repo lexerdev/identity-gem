@@ -2,6 +2,14 @@
 require 'spec_helper'
 
 describe Lexer::Identity do
+  describe 'constants' do
+    it 'has required constants' do
+      Lexer::Identity::CONFIDENCE_PROVIDED.wont_be_nil
+      Lexer::Identity::CONFIDENCE_CALCULATED.wont_be_nil
+      Lexer::Identity::CONFIDENCE_INFERRED.wont_be_nil
+    end
+  end
+
   describe 'use of links and ids' do
     before do
       Lexer::Identity.configuration = nil
@@ -11,20 +19,27 @@ describe Lexer::Identity do
         config.consumer_token = 'cde-345'
       end
     end
+    it 'requires either a link or id' do
+      proc do
+        Lexer::Identity.enrich
+      end.must_raise Lexer::Identity::MissingLinksError
+    end
+    it 'requires at least one link' do
+      proc do
+        Lexer::Identity.enrich(
+          links: {}
+        )
+      end.must_raise Lexer::Identity::MissingLinksError
+    end
     it 'produces a valid request with links' do
       stub_request(:post, 'https://identity.lexer.io/identity').
-        with(body: '{"links":{"email":["user1@brand.com","usera@brand.com"],"mobile":"61440000000"},"attributes":{"com.brand.car":"Tesla","com.brand.code":10,"com.brand.products":["a","b","c"],"com.brand.detail":{"make":"cake"}},"api_token":"abc-123","contributor_token":"bcd-234","consumer_token":"cde-345"}', headers: { 'Content-Type' => 'application/json' }).
+        with(body: '{"links":{"email":["user1@brand.com","usera@brand.com"],"mobile":"61440000000"},"api_token":"abc-123","contributor_token":"bcd-234","consumer_token":"cde-345"}', headers: { 'Content-Type' => 'application/json' }).
         to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
 
       Lexer::Identity.enrich(
         links: {
           email: %w(user1@brand.com usera@brand.com),
           mobile: '61440000000'
-        }, attributes: {
-          'com.brand.car' => 'Tesla',
-          'com.brand.code' => 10,
-          'com.brand.products' => %w(a b c),
-          'com.brand.detail' => { make: 'cake' }
         }
       )
 
@@ -32,24 +47,18 @@ describe Lexer::Identity do
     end
     it 'produces a valid request with an ID' do
       stub_request(:post, 'https://identity.lexer.io/identity').
-        with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":"Tesla","com.brand.code":10,"com.brand.products":["a","b","c"],"com.brand.detail":{"make":"cake"}},"api_token":"abc-123","contributor_token":"bcd-234","consumer_token":"cde-345"}', headers: { 'Content-Type' => 'application/json' }).
+        with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","api_token":"abc-123","contributor_token":"bcd-234","consumer_token":"cde-345"}', headers: { 'Content-Type' => 'application/json' }).
         to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
 
       Lexer::Identity.enrich(
-        id: '0a224111-ac64-4142-9198-adf8bf2c1a04',
-        attributes: {
-          'com.brand.car' => 'Tesla',
-          'com.brand.code' => 10,
-          'com.brand.products' => %w(a b c),
-          'com.brand.detail' => { make: 'cake' }
-        }
+        id: '0a224111-ac64-4142-9198-adf8bf2c1a04'
       )
 
       assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
     end
     it 'ignores links when an ID is present' do
       stub_request(:post, 'https://identity.lexer.io/identity').
-        with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":"Tesla","com.brand.code":10,"com.brand.products":["a","b","c"],"com.brand.detail":{"make":"cake"}},"api_token":"abc-123","contributor_token":"bcd-234","consumer_token":"cde-345"}', headers: { 'Content-Type' => 'application/json' }).
+        with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","api_token":"abc-123","contributor_token":"bcd-234","consumer_token":"cde-345"}', headers: { 'Content-Type' => 'application/json' }).
         to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
 
       Lexer::Identity.enrich(
@@ -57,12 +66,6 @@ describe Lexer::Identity do
         links: {
           email: %w(user1@brand.com usera@brand.com),
           mobile: '61440000000'
-        },
-        attributes: {
-          'com.brand.car' => 'Tesla',
-          'com.brand.code' => 10,
-          'com.brand.products' => %w(a b c),
-          'com.brand.detail' => { make: 'cake' }
         }
       )
 
@@ -78,17 +81,70 @@ describe Lexer::Identity do
         config.contributor_token = 'bcd-234'
       end
     end
-    
+    describe 'attribute payloads' do
+      it 'requires a complete payload' do
+        proc do
+          Lexer::Identity.enrich(
+            id: 'abc-123',
+            attributes: {
+              'com.brand.car' => 'Tesla'
+            }
+          )
+        end.must_raise Lexer::Identity::AttributePayloadError
+
+        proc do
+          Lexer::Identity.enrich(
+            id: 'abc-123',
+            attributes: {
+              'com.brand.car' => {
+                value: 'attribute value'
+              }
+            }
+          )
+        end.must_raise Lexer::Identity::AttributePayloadError
+
+        proc do
+          Lexer::Identity.enrich(
+            id: 'abc-123',
+            attributes: {
+              'com.brand.car' => {
+                confidence: Lexer::Identity::CONFIDENCE_PROVIDED
+              }
+            }
+          )
+        end.must_raise Lexer::Identity::AttributePayloadError
+      end
+      it 'allows a complete payload' do
+        stub_request(:post, 'https://identity.lexer.io/identity').
+          with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":{"value":"Tesla","confidence":2}},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
+          to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
+
+        Lexer::Identity.enrich(
+          id: '0a224111-ac64-4142-9198-adf8bf2c1a04',
+          attributes: {
+            'com.brand.car' => {
+              value: 'Tesla',
+              confidence: Lexer::Identity::CONFIDENCE_PROVIDED
+            }
+          }
+        )
+
+        assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
+      end
+    end
     it 'returns an EnrichedResult' do
       stub_request(:post, 'https://identity.lexer.io/identity').
-        with(body: '{"links":{"email":"user1@brand.com"},"attributes":{"com.brand.car":"Tesla"},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
+        with(body: '{"links":{"email":"user1@brand.com"},"attributes":{"com.brand.car":{"value":"Tesla","confidence":2}},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
         to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
 
       result = Lexer::Identity.enrich(
         links: {
           email: 'user1@brand.com'
         }, attributes: {
-          'com.brand.car' => 'Tesla'
+          'com.brand.car' => {
+            value: 'Tesla',
+            confidence: Lexer::Identity::CONFIDENCE_PROVIDED
+          }
         }
       )
 
@@ -109,14 +165,17 @@ describe Lexer::Identity do
     it 'produces a valid request' do
       stub_request(:post, 'https://identity.lexer.io/identity').
         with(body: '{"links":{"email":["user1@brand.com","usera@brand.com"],"mobile":"61440000000"},"api_token":"abc-123","consumer_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
-        to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":"Tesla","com.brand.code":10,"com.brand.products":["a","b","c"],"com.brand.detail":{"make":"cake"}}}')
+        to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":{"value":"Tesla","confidence":2},"com.brand.code":{"value":10,"confidence":2},"com.brand.products":{"value":["a","b","c"],"confidence":1},"com.brand.detail":{"value":{"make":"cake"},"confidence":0}}}')
 
       Lexer::Identity.enrich(
         links: {
           email: %w(user1@brand.com usera@brand.com),
           mobile: '61440000000'
         }, attributes: {
-          'com.brand.car' => 'Tesla' # note: this will be discarded as consumers can't contribute
+          'com.brand.car' => {
+            value: 'Tesla',
+            confidence: Lexer::Identity::CONFIDENCE_PROVIDED
+          }
         }
       )
 
@@ -125,20 +184,40 @@ describe Lexer::Identity do
     it 'returns an EnrichedResult' do
       stub_request(:post, 'https://identity.lexer.io/identity').
         with(body: '{"links":{"email":["user1@brand.com","usera@brand.com"],"mobile":"61440000000"},"api_token":"abc-123","consumer_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
-        to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":"Tesla","com.brand.code":10,"com.brand.products":["a","b","c"],"com.brand.detail":{"make":"cake"}}}')
+        to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":{"value":"Tesla","confidence":2},"com.brand.code":{"value":10,"confidence":2},"com.brand.products":{"value":["a","b","c"],"confidence":1},"com.brand.detail":{"value":{"make":"cake"},"confidence":0}}}')
 
       result = Lexer::Identity.enrich(
         links: {
           email: %w(user1@brand.com usera@brand.com),
           mobile: '61440000000'
         }, attributes: {
-          'com.brand.car' => 'Tesla' # note: this will be discarded as consumers can't contribute
+          'com.brand.car' => {
+            value: 'Tesla',
+            confidence: Lexer::Identity::CONFIDENCE_PROVIDED
+          }
         }
       )
 
       result.must_be_instance_of Lexer::Identity::EnrichedResult
       result.id.must_be_kind_of String
-      hash = { 'com.brand.car' => 'Tesla', 'com.brand.code' => 10, 'com.brand.products' => %w(a b c), 'com.brand.detail' => { 'make' => 'cake' } }
+      hash = {
+        'com.brand.car' => {
+          'value' => 'Tesla',
+          'confidence' => 2
+        },
+        'com.brand.code' => {
+          'value' => 10,
+          'confidence' => 2
+        },
+        'com.brand.products' => {
+          'value' => %w(a b c),
+          'confidence' => 1
+        },
+        'com.brand.detail' => {
+          'value' => { 'make' => 'cake' },
+          'confidence' => 0
+        }
+      }
       result.attributes.must_equal hash
     end
   end

@@ -5,6 +5,11 @@ require 'multi_json'
 module Lexer
   # :nordoc:
   module Identity
+    # Constants for attribute confidence
+    CONFIDENCE_PROVIDED = 2
+    CONFIDENCE_CALCULATED = 1
+    CONFIDENCE_INFERRED = 0
+
     # The backbone of the Identity API.
     # Enrich accepts links and attributes as per the
     # API Documentation hosted at http://developer.lexer.io/
@@ -15,20 +20,36 @@ module Lexer
     # +links+      - A hash of links to search for and link to the identity. Default: {}.
     # +attributes+ - A hash of attributes where keys are valid namespaces. Default: {}.
     #
+    # An +id+ or +links+ is required for a valid request.
+    #
     # Response:
     #
     # A hash containing the Lexer Identity ID and any attributes on the identity
     #
     def self.enrich(id: nil, links: {}, attributes: {})
+      body = {}
+
       # ensure the module is configured
       fail Lexer::Identity::ConfigurationError, 'Module has not been configured.' if configuration.nil?
       configuration.validate
 
-      # produce the request body
-      body = {}
-      body[:id] = id unless id.nil?
-      body[:links] = links if id.nil?
-      body[:attributes] = attributes unless configuration.contributor_token.nil?
+      # use the id if provided
+      if id.nil?
+        if links.keys.size == 0
+          fail Lexer::Identity::MissingLinksError, 'An ID or Link is required'
+        else
+          body[:links] = links
+        end
+      else
+        body[:id] = id
+      end
+
+      # only include attributes if contributing
+      if !configuration.contributor_token.nil? && attributes.keys.size > 0
+        self.validate_attributes attributes
+        body[:attributes] = attributes
+      end
+
       body[:api_token] = configuration.api_token unless configuration.api_token.nil?
       body[:contributor_token] = configuration.contributor_token unless configuration.contributor_token.nil?
       body[:consumer_token] = configuration.consumer_token unless configuration.consumer_token.nil?
@@ -37,6 +58,17 @@ module Lexer
     end
 
     private
+
+    def self.validate_attributes attributes
+      attributes.each { |k, v|
+        unless v.is_a? Hash
+          fail Lexer::Identity::AttributePayloadError, "#{k} is not a hash"
+        end
+        unless v.has_key?(:value) && v.has_key?(:confidence)
+          fail Lexer::Identity::AttributePayloadError, "#{k} has an invalid payload"
+        end
+      }
+    end
 
     def self.post_request(body)
       uri = URI(configuration.api_url)
