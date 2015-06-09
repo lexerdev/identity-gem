@@ -57,13 +57,13 @@ module Lexer
       when 200..204
         Lexer::Identity::EnrichedResult.from_json response.body
       when 400
-        fail Lexer::Identity::BadRequestError, response_body
+        fail Lexer::Identity::BadRequestError, response.body
       when 401
-        fail Lexer::Identity::AuthenticationError, response_body
+        fail Lexer::Identity::AuthenticationError, response.body
       when 404
-        fail Lexer::Identity::NotFoundError, response_body
+        fail Lexer::Identity::NotFoundError, response.body
       else
-        fail Lexer::Identity::HttpError, response_body
+        fail Lexer::Identity::HttpError, response.body
       end
     end
   end
