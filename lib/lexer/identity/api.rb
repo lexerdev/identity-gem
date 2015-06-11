@@ -59,16 +59,16 @@ module Lexer
 
     private
 
-    def self.validate_attributes attributes
-      attributes.each { |k, v|
+    def self.validate_attributes(attributes)
+      attributes.each do |k, v|
         unless v.is_a? Hash
           fail Lexer::Identity::AttributePayloadError, "#{k} is not a hash"
         end
 
-        unless [:value, :confidence].all? {|required_key| v.key?(required_key) || v.key?(required_key.to_s)}
+        unless [:value, :confidence].all? { |required_key| v.key?(required_key) || v.key?(required_key.to_s) }
           fail Lexer::Identity::AttributePayloadError, "#{k} has an invalid payload"
         end
-      }
+      end
     end
 
     def self.post_request(body)
