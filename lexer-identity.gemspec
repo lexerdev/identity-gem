@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.licenses    = ['MIT']
   s.authors     = ['Aaron Wallis']
   s.email       = 'code@Lexer.io'
-  s.homepage    = 'https://github.com/lexerdev/lexer-identity-api.gem'
+  s.homepage    = 'https://github.com/lexerdev/identity-gem'
   s.summary     = 'Lexer Identity API Client'
   s.description = 'Consume and Contribute Identity data from your Ruby applications.'
 

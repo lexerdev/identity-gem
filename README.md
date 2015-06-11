@@ -7,6 +7,7 @@
 Lexer Identity Gem is the official Ruby Client for the [Lexer Identity](https://lexer.io/) API. The
 Lexer Identity API lets brands contribute and consume from Lexer's Identity database directly from their apps.
 
+
 ## Installation
 
 Add to your Gemfile:
@@ -17,51 +18,23 @@ or install from Rubygems:
 
     gem install lexer-identity
 
+And include it in your project as:
 
-## Details
+    require 'lexer'
 
-### Links:
 
-Have a limited list of keys which can be reviewed at: http://developer.lexer.io/
-Your hash should reflect the following format:
+## Use
 
-    {
-      email: "joe.smith@mybrand.com",
-      phone: "61440000000",
-      twitter: "camplexer"
-    }
+    # Configure using the provided tokens
+    Lexer::Identity.configure do |config|
+      config.api_token = "..."
+      config.contributor_token = "..."
+      config.consumer_token = "..."
+    end
+  
+    # Communicate via the enrich method
+    Lexer::Identity.enrich( links: { email: "test@lexer.io", twitter: "camplexer" }, attributes: { "io.lexer.name": { value: "Jane Smith", confidence: Lexer::Identity::CONFIDENCE_PROVIDED, ... } )
 
-Multiple values can be provided via arrays:
+## Further Reading
 
-    {
-      email: ["joe.smith@mybrand.com", "j.smith@mybrand.com"],
-      phone: "61440000000",
-      twitter: "camplexer"
-    }
-
-### Attributes:
-
-Need to be defined by the valid namespace which should be provided
-to you along with your tokens.
-An attribute namespace is defined by: `com.brand.*` where `com.brand`
-is defined along with your tokens and `*` can be replaced with any
-`A-Za-z0-9._-` character.
-
-Your attribute hash should reflect the following format:
-
-    {
-      "com.brand.email" => "joe.smith@mybrand.com",
-      "com.brand.phone" => "61440000000",
-      "com.brand.twitter" => "camplexer"
-    }
-
-Permitted values include:
-
-- String
-- Numbers
-- Arrays
-- Simple Hashes
-
-Attribute hashes are transported via JSON so any format supported
-by JSON is supported by Lexer.
-
+See the full documentation at http://developer.lexer.io.
