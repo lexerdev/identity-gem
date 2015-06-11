@@ -114,6 +114,33 @@ describe Lexer::Identity do
           )
         end.must_raise Lexer::Identity::AttributePayloadError
       end
+      it 'accepts symbols or string keys' do
+        stub_request(:post, 'https://identity.lexer.io/identity').
+          with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":{"value":"Tesla","confidence":2}},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
+          to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
+
+        Lexer::Identity.enrich(
+          id: '0a224111-ac64-4142-9198-adf8bf2c1a04',
+          attributes: {
+            'com.brand.car' => {
+              value: 'Tesla',
+              confidence: Lexer::Identity::CONFIDENCE_PROVIDED
+            }
+          }
+        )
+
+        Lexer::Identity.enrich(
+          id: '0a224111-ac64-4142-9198-adf8bf2c1a04',
+          attributes: {
+            'com.brand.car' => {
+              'value' => 'Tesla',
+              'confidence' => Lexer::Identity::CONFIDENCE_PROVIDED
+            }
+          }
+        )
+
+        assert_requested(:post, 'https://identity.lexer.io/identity', times: 2)
+      end
       it 'allows a complete payload' do
         stub_request(:post, 'https://identity.lexer.io/identity').
           with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":{"value":"Tesla","confidence":2}},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
@@ -125,6 +152,26 @@ describe Lexer::Identity do
             'com.brand.car' => {
               value: 'Tesla',
               confidence: Lexer::Identity::CONFIDENCE_PROVIDED
+            }
+          }
+        )
+
+        assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
+      end
+      it 'allows a metadata payload' do
+        stub_request(:post, 'https://identity.lexer.io/identity').
+          with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":{"value":"Tesla","confidence":2,"metadata":{"extra":"data"}}},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
+          to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
+
+        Lexer::Identity.enrich(
+          id: '0a224111-ac64-4142-9198-adf8bf2c1a04',
+          attributes: {
+            'com.brand.car' => {
+              value: 'Tesla',
+              confidence: Lexer::Identity::CONFIDENCE_PROVIDED,
+              metadata: {
+                extra: "data"
+              }
             }
           }
         )

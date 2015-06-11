@@ -64,7 +64,8 @@ module Lexer
         unless v.is_a? Hash
           fail Lexer::Identity::AttributePayloadError, "#{k} is not a hash"
         end
-        unless v.has_key?(:value) && v.has_key?(:confidence)
+
+        unless [:value, :confidence].all? {|required_key| v.key?(required_key) || v.key?(required_key.to_s)}
           fail Lexer::Identity::AttributePayloadError, "#{k} has an invalid payload"
         end
       }
