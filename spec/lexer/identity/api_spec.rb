@@ -114,6 +114,35 @@ describe Lexer::Identity do
           )
         end.must_raise Lexer::Identity::AttributePayloadError
       end
+      it 'accepts values as strings, numbers, arrays and hashes' do
+        stub_request(:post, "https://identity.lexer.io/identity").
+          with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.string":{"value":"Tesla","confidence":2},"com.brand.number":{"value":100,"confidence":2},"com.brand.array":{"value":["a","b"],"confidence":2},"com.brand.hash":{"value":{"klass":"hash"},"confidence":2}},"api_token":"abc-123","contributor_token":"bcd-234"}').
+          to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
+        
+        Lexer::Identity.enrich(
+          id: '0a224111-ac64-4142-9198-adf8bf2c1a04',
+          attributes: {
+            'com.brand.string' => {
+              value: 'Tesla',
+              confidence: Lexer::Identity::CONFIDENCE_PROVIDED
+            },
+            'com.brand.number' => {
+              value: 100,
+              confidence: Lexer::Identity::CONFIDENCE_PROVIDED
+            },
+            'com.brand.array' => {
+              value: ["a", "b"],
+              confidence: Lexer::Identity::CONFIDENCE_PROVIDED
+            },
+            'com.brand.hash' => {
+              value: { klass: 'hash' },
+              confidence: Lexer::Identity::CONFIDENCE_PROVIDED
+            }
+          }
+        )
+
+        assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
+      end
       it 'accepts symbols or string keys' do
         stub_request(:post, 'https://identity.lexer.io/identity').
           with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":{"value":"Tesla","confidence":2}},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
