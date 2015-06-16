@@ -6,9 +6,9 @@ module Lexer
   # :nordoc:
   module Identity
     # Constants for attribute confidence
-    CONFIDENCE_PROVIDED = 2
+    CONFIDENCE_PROVIDED   = 2
     CONFIDENCE_CALCULATED = 1
-    CONFIDENCE_INFERRED = 0
+    CONFIDENCE_INFERRED   = 0
 
     # The backbone of the Identity API.
     # Enrich accepts links and attributes as per the
@@ -45,8 +45,8 @@ module Lexer
       end
 
       # only include attributes if contributing
-      if !configuration.contributor_token.nil? && attributes.keys.size > 0
-        self.validate_attributes attributes
+      if !configuration.contributor_token.nil? && (attributes.keys.size > 0)
+        validate_attributes(attributes)
         body[:attributes] = attributes
       end
 
@@ -54,14 +54,14 @@ module Lexer
       body[:contributor_token] = configuration.contributor_token unless configuration.contributor_token.nil?
       body[:consumer_token] = configuration.consumer_token unless configuration.consumer_token.nil?
 
-      post_request body
+      post_request(body)
     end
 
     private
 
     def self.validate_attributes(attributes)
       attributes.each do |k, v|
-        unless v.is_a? Hash
+        unless v.is_a?(Hash)
           fail Lexer::Identity::AttributePayloadError, "#{k} is not a hash"
         end
 
@@ -73,7 +73,7 @@ module Lexer
 
     def self.post_request(body)
       uri = URI(configuration.api_url)
-      header = { 'Content-Type' => 'application/json' }
+      header = {'Content-Type': 'application/json'}
       request = Net::HTTP::Post.new(uri, header)
       request.body = MultiJson.encode(body)
 
@@ -82,7 +82,7 @@ module Lexer
         http.request(request)
       end
 
-      parse_response response
+      parse_response(response)
     end
 
     def self.parse_response(response)
@@ -99,5 +99,5 @@ module Lexer
         fail Lexer::Identity::HttpError, response.body
       end
     end
-  end
-end
+  end # Module Identity
+end # Module Lexer

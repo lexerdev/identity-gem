@@ -1,5 +1,8 @@
 Style/Encoding:
   Enabled: true
 
+Style/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: no_space
+
 Metrics/LineLength:
   Enabled: false
