@@ -18,6 +18,7 @@ describe Lexer::Identity do
       config.consumer_token.must_be_nil
       config.contributor_token.must_be_nil
     end
+
     it 'sets configuration arguments' do
       Lexer::Identity.configure do |config|
         config.api_token = 'abc123'
@@ -32,19 +33,21 @@ describe Lexer::Identity do
       config.consumer_token.must_equal 'abc124'
       config.contributor_token.must_equal 'abc125'
     end
-  end
+  end # 'configuration setup'
 
   describe 'configuration validation' do
-    it 'validates the presense of an API token' do
+    it 'validates the presence of an API token' do
       Lexer::Identity.configure {}
       proc { Lexer::Identity.configuration.validate }.must_raise Lexer::Identity::ConfigurationError
     end
-    it 'validates the presense of a contributor or consumer token' do
+
+    it 'validates the presence of a contributor or consumer token' do
       Lexer::Identity.configure do |config|
         config.api_token = 'abc123'
       end
       proc { Lexer::Identity.configuration.validate }.must_raise Lexer::Identity::ConfigurationError
     end
+
     it 'validates the difference of a contributor or consumer token' do
       Lexer::Identity.configure do |config|
         config.api_token = 'abc123'
@@ -53,5 +56,5 @@ describe Lexer::Identity do
       end
       proc { Lexer::Identity.configuration.validate }.must_raise Lexer::Identity::ConfigurationError
     end
-  end
+  end # 'configuration validation'
 end
