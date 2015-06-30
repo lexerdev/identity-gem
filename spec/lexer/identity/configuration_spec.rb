@@ -13,7 +13,7 @@ describe Lexer::Identity do
 
       config = Lexer::Identity.configuration
 
-      config.api_url.must_equal 'https://identity.lexer.io/identity'
+      config.api_url.must_equal 'https://identity.api.lexer.io/'
       config.api_token.must_be_nil
       config.consumer_token.must_be_nil
       config.contributor_token.must_be_nil
@@ -28,7 +28,7 @@ describe Lexer::Identity do
 
       config = Lexer::Identity.configuration
 
-      config.api_url.must_equal 'https://identity.lexer.io/identity'
+      config.api_url.must_equal 'https://identity.api.lexer.io/'
       config.api_token.must_equal 'abc123'
       config.consumer_token.must_equal 'abc124'
       config.contributor_token.must_equal 'abc125'

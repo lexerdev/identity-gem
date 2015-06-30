@@ -20,7 +20,7 @@ module Lexer
 
       # Creates the configuration instance and defines default values
       def initialize
-        @api_url = 'https://identity.lexer.io/identity'
+        @api_url = 'https://identity.api.lexer.io/'
         @api_token = nil
         @contributor_token = nil
         @consumer_token = nil

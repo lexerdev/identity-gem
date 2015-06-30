@@ -22,7 +22,7 @@ module Lexer
   #     config.consumer_token = "..."
   #   end
   #
-  #   Lexer::Identity.enrich( id: "...", links: { email: "...", ... }, attributes: { "com.mybrand.name": "...", ... } )
+  #   Lexer::Identity.enrich(id: "...", links: {email: "...", ...}, attributes: {"com.mybrand.name": "...", ...})
   #
   # See the +Lexer::Identity.enrich+ documentation for more details.
   module Identity

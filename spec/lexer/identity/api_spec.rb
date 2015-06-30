@@ -19,11 +19,13 @@ describe Lexer::Identity do
         config.consumer_token = 'cde-345'
       end
     end
+
     it 'requires either a link or id' do
       proc do
         Lexer::Identity.enrich
       end.must_raise Lexer::Identity::MissingLinksError
     end
+
     it 'requires at least one link' do
       proc do
         Lexer::Identity.enrich(
@@ -31,8 +33,9 @@ describe Lexer::Identity do
         )
       end.must_raise Lexer::Identity::MissingLinksError
     end
+
     it 'produces a valid request with links' do
-      stub_request(:post, 'https://identity.lexer.io/identity').
+      stub_request(:post, 'https://identity.api.lexer.io/').
         with(body: '{"links":{"email":["user1@brand.com","usera@brand.com"],"mobile":"61440000000"},"api_token":"abc-123","contributor_token":"bcd-234","consumer_token":"cde-345"}', headers: { 'Content-Type' => 'application/json' }).
         to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
 
@@ -43,10 +46,11 @@ describe Lexer::Identity do
         }
       )
 
-      assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
+      assert_requested(:post, 'https://identity.api.lexer.io/', times: 1)
     end
+
     it 'produces a valid request with an ID' do
-      stub_request(:post, 'https://identity.lexer.io/identity').
+      stub_request(:post, 'https://identity.api.lexer.io/').
         with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","api_token":"abc-123","contributor_token":"bcd-234","consumer_token":"cde-345"}', headers: { 'Content-Type' => 'application/json' }).
         to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
 
@@ -54,10 +58,11 @@ describe Lexer::Identity do
         id: '0a224111-ac64-4142-9198-adf8bf2c1a04'
       )
 
-      assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
+      assert_requested(:post, 'https://identity.api.lexer.io/', times: 1)
     end
+
     it 'ignores links when an ID is present' do
-      stub_request(:post, 'https://identity.lexer.io/identity').
+      stub_request(:post, 'https://identity.api.lexer.io/').
         with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","api_token":"abc-123","contributor_token":"bcd-234","consumer_token":"cde-345"}', headers: { 'Content-Type' => 'application/json' }).
         to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
 
@@ -69,7 +74,7 @@ describe Lexer::Identity do
         }
       )
 
-      assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
+      assert_requested(:post, 'https://identity.api.lexer.io/', times: 1)
     end
   end
 
@@ -81,6 +86,7 @@ describe Lexer::Identity do
         config.contributor_token = 'bcd-234'
       end
     end
+
     describe 'attribute payloads' do
       it 'requires a complete payload' do
         proc do
@@ -114,11 +120,12 @@ describe Lexer::Identity do
           )
         end.must_raise Lexer::Identity::AttributePayloadError
       end
+
       it 'accepts values as strings, numbers, arrays and hashes' do
-        stub_request(:post, "https://identity.lexer.io/identity").
+        stub_request(:post, "https://identity.api.lexer.io/").
           with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.string":{"value":"Tesla","confidence":2},"com.brand.number":{"value":100,"confidence":2},"com.brand.array":{"value":["a","b"],"confidence":2},"com.brand.hash":{"value":{"klass":"hash"},"confidence":2}},"api_token":"abc-123","contributor_token":"bcd-234"}').
           to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
-        
+
         Lexer::Identity.enrich(
           id: '0a224111-ac64-4142-9198-adf8bf2c1a04',
           attributes: {
@@ -141,10 +148,11 @@ describe Lexer::Identity do
           }
         )
 
-        assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
+        assert_requested(:post, 'https://identity.api.lexer.io/', times: 1)
       end
+
       it 'accepts symbols or string keys' do
-        stub_request(:post, 'https://identity.lexer.io/identity').
+        stub_request(:post, 'https://identity.api.lexer.io/').
           with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":{"value":"Tesla","confidence":2}},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
           to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
 
@@ -168,10 +176,11 @@ describe Lexer::Identity do
           }
         )
 
-        assert_requested(:post, 'https://identity.lexer.io/identity', times: 2)
+        assert_requested(:post, 'https://identity.api.lexer.io/', times: 2)
       end
+
       it 'allows a complete payload' do
-        stub_request(:post, 'https://identity.lexer.io/identity').
+        stub_request(:post, 'https://identity.api.lexer.io/').
           with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":{"value":"Tesla","confidence":2}},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
           to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
 
@@ -185,10 +194,11 @@ describe Lexer::Identity do
           }
         )
 
-        assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
+        assert_requested(:post, 'https://identity.api.lexer.io/', times: 1)
       end
+
       it 'allows a metadata payload' do
-        stub_request(:post, 'https://identity.lexer.io/identity').
+        stub_request(:post, 'https://identity.api.lexer.io/').
           with(body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":{"value":"Tesla","confidence":2,"metadata":{"extra":"data"}}},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
           to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
 
@@ -205,18 +215,20 @@ describe Lexer::Identity do
           }
         )
 
-        assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
+        assert_requested(:post, 'https://identity.api.lexer.io/', times: 1)
       end
     end
+
     it 'returns an EnrichedResult' do
-      stub_request(:post, 'https://identity.lexer.io/identity').
+      stub_request(:post, 'https://identity.api.lexer.io/').
         with(body: '{"links":{"email":"user1@brand.com"},"attributes":{"com.brand.car":{"value":"Tesla","confidence":2}},"api_token":"abc-123","contributor_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
         to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04"}')
 
       result = Lexer::Identity.enrich(
         links: {
           email: 'user1@brand.com'
-        }, attributes: {
+        },
+        attributes: {
           'com.brand.car' => {
             value: 'Tesla',
             confidence: Lexer::Identity::CONFIDENCE_PROVIDED
@@ -238,8 +250,9 @@ describe Lexer::Identity do
         config.consumer_token = 'bcd-234'
       end
     end
+
     it 'produces a valid request' do
-      stub_request(:post, 'https://identity.lexer.io/identity').
+      stub_request(:post, 'https://identity.api.lexer.io/').
         with(body: '{"links":{"email":["user1@brand.com","usera@brand.com"],"mobile":"61440000000"},"api_token":"abc-123","consumer_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
         to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":{"value":"Tesla","confidence":2},"com.brand.code":{"value":10,"confidence":2},"com.brand.products":{"value":["a","b","c"],"confidence":1},"com.brand.detail":{"value":{"make":"cake"},"confidence":0}}}')
 
@@ -247,7 +260,8 @@ describe Lexer::Identity do
         links: {
           email: %w(user1@brand.com usera@brand.com),
           mobile: '61440000000'
-        }, attributes: {
+        },
+        attributes: {
           'com.brand.car' => {
             value: 'Tesla',
             confidence: Lexer::Identity::CONFIDENCE_PROVIDED
@@ -255,10 +269,11 @@ describe Lexer::Identity do
         }
       )
 
-      assert_requested(:post, 'https://identity.lexer.io/identity', times: 1)
+      assert_requested(:post, 'https://identity.api.lexer.io/', times: 1)
     end
+
     it 'returns an EnrichedResult' do
-      stub_request(:post, 'https://identity.lexer.io/identity').
+      stub_request(:post, 'https://identity.api.lexer.io/').
         with(body: '{"links":{"email":["user1@brand.com","usera@brand.com"],"mobile":"61440000000"},"api_token":"abc-123","consumer_token":"bcd-234"}', headers: { 'Content-Type' => 'application/json' }).
         to_return(status: 200, body: '{"id":"0a224111-ac64-4142-9198-adf8bf2c1a04","attributes":{"com.brand.car":{"value":"Tesla","confidence":2},"com.brand.code":{"value":10,"confidence":2},"com.brand.products":{"value":["a","b","c"],"confidence":1},"com.brand.detail":{"value":{"make":"cake"},"confidence":0}}}')
 
@@ -266,7 +281,8 @@ describe Lexer::Identity do
         links: {
           email: %w(user1@brand.com usera@brand.com),
           mobile: '61440000000'
-        }, attributes: {
+        },
+        attributes: {
           'com.brand.car' => {
             value: 'Tesla',
             confidence: Lexer::Identity::CONFIDENCE_PROVIDED
@@ -297,4 +313,5 @@ describe Lexer::Identity do
       result.attributes.must_equal hash
     end
   end
+
 end
