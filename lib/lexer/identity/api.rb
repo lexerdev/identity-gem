@@ -77,8 +77,7 @@ module Lexer
       request = Net::HTTP::Post.new(uri, header)
       request.body = MultiJson.encode(body)
 
-      # XXX: SSL VALIDATION IS DISABLED - BAD BAD BAD
-      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true, verify_mode: OpenSSL::SSL::VERIFY_NONE) do |http|
+      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
         http.request(request)
       end
 
