@@ -73,7 +73,7 @@ module Lexer
 
     def self.post_request(body)
       uri = URI(configuration.api_url)
-      header = {'Content-Type': 'application/json'}
+      header = {'Content-Type' => 'application/json'}
       request = Net::HTTP::Post.new(uri, header)
       request.body = MultiJson.encode(body)
 
