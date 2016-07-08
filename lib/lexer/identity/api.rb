@@ -77,7 +77,7 @@ module Lexer
       request = Net::HTTP::Post.new(uri, header)
       request.body = MultiJson.encode(body)
 
-      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true, verify_mode: OpenSSL::SSL::VERIFY_NONE) do |http|
         http.request(request)
       end
 
