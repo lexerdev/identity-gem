@@ -26,7 +26,7 @@ module Lexer
     #
     # A hash containing the Lexer Identity ID and any attributes on the identity
     #
-    def self.enrich(id: nil, links: {}, attributes: {})
+    def self.enrich(id: nil, links: {}, attributes: {}, unify: false)
       body = {}
 
       # ensure the module is configured
@@ -49,6 +49,15 @@ module Lexer
         validate_attributes(attributes)
         body[:attributes] = attributes
       end
+
+      # Unify the identity if given a contributor token and the request body
+      # contains unify: true
+      body[:unify] =
+        if !configuration.contributor_token.nil?
+          unify
+        else
+          false
+        end
 
       body[:api_token] = configuration.api_token unless configuration.api_token.nil?
       body[:contributor_token] = configuration.contributor_token unless configuration.contributor_token.nil?
