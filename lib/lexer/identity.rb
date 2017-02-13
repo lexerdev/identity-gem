@@ -67,6 +67,9 @@ module Lexer
     # short space of time (3 min)
     class TooManyRequests < HttpError; end
 
+    # Failed to obtain exclusive lock on identity in database
+    class LockError < HttpError; end
+
     # inherit configuration
     class << self
       attr_accessor :configuration
