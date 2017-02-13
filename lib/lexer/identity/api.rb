@@ -103,6 +103,8 @@ module Lexer
         fail Lexer::Identity::AuthenticationError, response.body
       when 404
         fail Lexer::Identity::NotFoundError, response.body
+      when 429
+        fail Lexer::Identity::TooManyRequests, response.body
       else
         fail Lexer::Identity::HttpError, response.body
       end

@@ -63,6 +63,10 @@ module Lexer
     # Will be thrown when the object can't be loaded from the API
     class NotFoundError < HttpError; end
 
+    # Will be thrown when too many updates are attempted on an identity in a
+    # short space of time (3 min)
+    class TooManyRequests < HttpError; end
+
     # inherit configuration
     class << self
       attr_accessor :configuration
